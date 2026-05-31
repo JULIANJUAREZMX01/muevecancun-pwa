@@ -91,7 +91,7 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-3">
           {[
             { icon: '📍', label: 'Paradas cercanas', path: '/mapa', color: '#2D6A4F', bg: '#D1FAE5' },
-            { icon: '🗺️', label: 'Ver mapa', path: '/mapa', color: '#1E40AF', bg: '#DBEAFE' },
+            { icon: '🎫', label: 'Mis boletos', path: '/boletos', color: '#7C3AED', bg: '#EDE9FE' },
             { icon: '⭐', label: 'Favoritas', path: '/rutas', color: '#92400E', bg: '#FEF3C7' },
           ].map((action) => (
             <Link

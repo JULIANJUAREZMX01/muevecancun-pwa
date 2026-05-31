@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, BellOff, CheckCircle, AlertTriangle, Clock, Info, Zap, Trash2 } from 'lucide-react';
+import NotifScheduleSettings from '@/components/notifications/NotifScheduleSettings';
+import { offlineCache } from '@/lib/offlineCache';
+import { useOnlineStatus } from '@/lib/useOnlineStatus';
 
 const ROUTE_OPTIONS = ['R1', 'R2', 'R13', 'R1A', 'R15', 'EXP'];
 
@@ -214,6 +217,7 @@ function PushSettings({ myEmail }) {
 export default function NotificationsPage() {
   const [tab, setTab] = useState('alerts');
   const [myEmail, setMyEmail] = useState(null);
+  const isOnline = useOnlineStatus();
 
   useEffect(() => {
     base44.auth.me().then(u => { if (u) setMyEmail(u.email); }).catch(() => {});
@@ -221,8 +225,13 @@ export default function NotificationsPage() {
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['all-alerts'],
-    queryFn: () => base44.entities.Alert.filter({ is_active: true }),
-    refetchInterval: 30000,
+    queryFn: async () => {
+      if (!isOnline) return offlineCache.getAlerts() || [];
+      const data = await base44.entities.Alert.filter({ is_active: true });
+      offlineCache.saveAlerts(data);
+      return data;
+    },
+    refetchInterval: isOnline ? 30000 : false,
   });
 
   const sorted = [...alerts].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
@@ -240,7 +249,8 @@ export default function NotificationsPage() {
           <div className="flex gap-2 mt-4">
             {[
               { key: 'alerts', label: `🔔 Alertas${alerts.length > 0 ? ` (${alerts.length})` : ''}` },
-              { key: 'settings', label: '⚙️ Configurar' },
+              { key: 'schedule', label: '🕐 Horario' },
+              { key: 'settings', label: '⚙️ Push' },
             ].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className="flex-1 py-2 rounded-2xl text-sm font-bold transition-all"
@@ -271,6 +281,7 @@ export default function NotificationsPage() {
             ) : sorted.map(a => <AlertCard key={a.id} alert={a} />)}
           </>
         )}
+        {tab === 'schedule' && <NotifScheduleSettings />}
         {tab === 'settings' && <PushSettings myEmail={myEmail} />}
         <div className="h-4" />
       </div>

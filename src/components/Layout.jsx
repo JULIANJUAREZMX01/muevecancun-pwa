@@ -1,5 +1,6 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { Home, Map, List, Bell, Trophy } from 'lucide-react';
+import OfflineBanner from '@/components/OfflineBanner';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Inicio' },
@@ -14,6 +15,7 @@ export default function Layout() {
 
   return (
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#FFFBF0', maxWidth: '480px', margin: '0 auto' }}>
+      <OfflineBanner />
       {/* Main content */}
       <main className="flex-1 overflow-y-auto pb-24">
         <Outlet />

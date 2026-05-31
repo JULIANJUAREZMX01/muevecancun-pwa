@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Search, Clock, DollarSign, MapPin, Star, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { offlineCache } from '@/lib/offlineCache';
+import { useOnlineStatus } from '@/lib/useOnlineStatus';
 
 const STATUS_CONFIG = {
   active: { label: '✅ Activa', color: '#2D6A4F', bg: '#D1FAE5' },
@@ -113,10 +115,16 @@ export default function RoutesPage() {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
+  const isOnline = useOnlineStatus();
 
   const { data: dbRoutes = [] } = useQuery({
     queryKey: ['routes'],
-    queryFn: () => base44.entities.Route.list(),
+    queryFn: async () => {
+      if (!isOnline) return offlineCache.getRoutes() || [];
+      const data = await base44.entities.Route.list();
+      if (data.length > 0) offlineCache.saveRoutes(data);
+      return data;
+    },
   });
 
   const displayRoutes = dbRoutes.length > 0 ? dbRoutes : SAMPLE_ROUTES;
