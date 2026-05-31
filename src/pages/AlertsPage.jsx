@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Bell, AlertTriangle, XCircle, Info, Navigation, RefreshCw } from 'lucide-react';
+import { Bell, AlertTriangle, XCircle, Info, Navigation, RefreshCw, Send } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import AlertDispatchPanel from '@/components/admin/AlertDispatchPanel';
 
 const TYPE_CONFIG = {
   delay: { icon: '⏱️', label: 'Demora', color: '#92400E', bg: '#FEF3C7', border: '#F59E0B' },
@@ -128,6 +129,7 @@ export default function AlertsPage() {
               { key: 'cancellation', label: '🚫 Cancelaciones' },
               { key: 'detour', label: '🔄 Desvíos' },
               { key: 'info', label: 'ℹ️ Info' },
+              { key: 'dispatch', label: '📢 Enviar' },
             ].map(f => (
               <button
                 key={f.key}
@@ -146,8 +148,11 @@ export default function AlertsPage() {
       </div>
 
       <div className="px-4 py-4 space-y-3">
+        {/* Dispatch panel tab */}
+        {filterType === 'dispatch' && <AlertDispatchPanel />}
+
         {/* High severity banner */}
-        {highSeverity > 0 && (
+        {filterType !== 'dispatch' && highSeverity > 0 && (
           <div
             className="flex items-center gap-3 p-4 rounded-2xl"
             style={{ backgroundColor: '#FEE2E2', border: '2px solid #EF4444' }}
@@ -162,24 +167,25 @@ export default function AlertsPage() {
           </div>
         )}
 
-        {isLoading ? (
+        {filterType !== 'dispatch' && isLoading ? (
           <div className="text-center py-12">
             <div className="w-10 h-10 border-4 border-green-200 border-t-green-700 rounded-full animate-spin mx-auto mb-3"></div>
             <p className="text-gray-500 text-sm">Cargando alertas...</p>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : filterType !== 'dispatch' && filtered.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-5xl">✅</span>
             <p className="font-black text-lg mt-3" style={{ color: '#2D6A4F' }}>Sin alertas</p>
             <p className="text-gray-500 text-sm">Todos los servicios operan con normalidad</p>
           </div>
-        ) : (
+        ) : filterType !== 'dispatch' ? (
           filtered.map(alert => (
             <AlertCard key={alert.id} alert={alert} />
           ))
-        )}
+        ) : null}
 
         {/* Info box */}
+        {filterType !== 'dispatch' && (
         <div
           className="p-4 rounded-2xl"
           style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}
@@ -192,6 +198,7 @@ export default function AlertsPage() {
             Activa las notificaciones push para recibir alertas en tiempo real de tus rutas favoritas. ¡Tu tucán te avisará! 🔔
           </p>
         </div>
+        )}
 
         <div className="h-4" />
       </div>
