@@ -41,6 +41,11 @@
     "is_terminal": {
       "type": "boolean",
       "default": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n adicional de la parada",
+      "maxLength": 1000
     }
   },
   "required": [

@@ -36,6 +36,11 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "description": {
+      "type": "string",
+      "description": "Notas sobre esta suscripci\u00f3n push",
+      "maxLength": 1000
     }
   },
   "required": [

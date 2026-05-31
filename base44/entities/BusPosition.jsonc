@@ -54,6 +54,11 @@
     "last_updated": {
       "type": "string",
       "format": "date-time"
+    },
+    "description": {
+      "type": "string",
+      "description": "Observaciones adicionales sobre la unidad",
+      "maxLength": 1000
     }
   },
   "required": [

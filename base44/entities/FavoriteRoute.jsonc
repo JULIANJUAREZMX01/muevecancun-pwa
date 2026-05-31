@@ -29,6 +29,11 @@
     "custom_label": {
       "type": "string",
       "description": "Etiqueta personalizada del usuario"
+    },
+    "description": {
+      "type": "string",
+      "description": "Nota personal del usuario sobre esta ruta favorita",
+      "maxLength": 1000
     }
   },
   "required": [

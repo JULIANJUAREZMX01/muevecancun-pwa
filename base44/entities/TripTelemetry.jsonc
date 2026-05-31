@@ -64,6 +64,11 @@
     "trip_rating": {
       "type": "integer",
       "description": "Calificaci\u00f3n del viaje 1-5"
+    },
+    "description": {
+      "type": "string",
+      "description": "Observaciones adicionales sobre el viaje",
+      "maxLength": 1000
     }
   },
   "required": [

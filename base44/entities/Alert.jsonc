@@ -51,6 +51,11 @@
       "items": {
         "type": "string"
       }
+    },
+    "description": {
+      "type": "string",
+      "description": "Contexto adicional sobre la alerta",
+      "maxLength": 1000
     }
   },
   "required": [

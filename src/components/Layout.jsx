@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
-import { Home, Map, List, Bell, Trophy, ChevronUp } from 'lucide-react';
+import { Home, Map, List, Bell, Trophy, ChevronUp, Info, Mail } from 'lucide-react';
 import { useState } from 'react';
 import OfflineBanner from '@/components/OfflineBanner';
 
@@ -69,6 +69,24 @@ export default function Layout() {
               })}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Footer links */}
+      {!['/mapa', '/agente'].includes(location.pathname) && (
+        <div
+          className="flex items-center justify-center gap-6 px-4 py-3"
+          style={{ backgroundColor: '#F9FAFB', borderTop: '1px solid #E5E7EB', paddingBottom: 'calc(0.75rem + 5rem)' }}
+        >
+          <Link to="/acerca" className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#6B7280' }}>
+            <Info size={13} /> Acerca de
+          </Link>
+          <span className="text-gray-300">·</span>
+          <Link to="/contacto" className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#6B7280' }}>
+            <Mail size={13} /> Contacto
+          </Link>
+          <span className="text-gray-300">·</span>
+          <span className="text-xs text-gray-400">MueveCancún © 2026</span>
         </div>
       )}
 

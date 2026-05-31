@@ -47,6 +47,11 @@
     "last_activity": {
       "type": "string",
       "format": "date-time"
+    },
+    "description": {
+      "type": "string",
+      "description": "Perfil p\u00fablico o nota del usuario",
+      "maxLength": 1000
     }
   },
   "required": [
