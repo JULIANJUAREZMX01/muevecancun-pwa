@@ -1,0 +1,55 @@
+{
+  "name": "UserPoints",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nombre del usuario"
+    },
+    "total_points": {
+      "type": "integer",
+      "default": 0
+    },
+    "level": {
+      "type": "integer",
+      "default": 1
+    },
+    "level_name": {
+      "type": "string",
+      "default": "Viajero Inicial"
+    },
+    "trips_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "reports_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "alerts_read": {
+      "type": "integer",
+      "default": 0
+    },
+    "consecutive_days": {
+      "type": "integer",
+      "default": 0
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_activity": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

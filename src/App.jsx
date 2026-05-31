@@ -12,6 +12,8 @@ import RoutesPage from '@/pages/RoutesPage';
 import AlertsPage from '@/pages/AlertsPage';
 import AgentPage from '@/pages/AgentPage';
 import DashboardPage from '@/pages/DashboardPage';
+import RewardsPage from '@/pages/RewardsPage';
+import NotificationsPage from '@/pages/NotificationsPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -46,6 +48,8 @@ const AuthenticatedApp = () => {
         <Route path="/alertas" element={<AlertsPage />} />
         <Route path="/agente" element={<AgentPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/rewards" element={<RewardsPage />} />
+        <Route path="/notificaciones" element={<NotificationsPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

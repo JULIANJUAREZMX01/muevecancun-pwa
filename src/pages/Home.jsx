@@ -114,7 +114,7 @@ export default function Home() {
                 <Bell size={16} style={{ color: '#F4A261' }} />
                 <h2 className="font-black text-base" style={{ color: '#2D6A4F' }}>Alertas Activas</h2>
               </div>
-              <Link to="/alertas" className="text-xs font-bold" style={{ color: '#F4A261' }}>Ver todas</Link>
+              <Link to="/notificaciones" className="text-xs font-bold" style={{ color: '#F4A261' }}>⚙️ Config.</Link>
             </div>
             <div className="space-y-2">
               {alerts.slice(0, 2).map((alert) => (

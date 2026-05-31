@@ -1,0 +1,45 @@
+{
+  "name": "PushSubscription",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "endpoint": {
+      "type": "string"
+    },
+    "p256dh": {
+      "type": "string"
+    },
+    "auth": {
+      "type": "string"
+    },
+    "favorite_routes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Route numbers to watch"
+    },
+    "notify_delays": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_schedule": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_incidents": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_email",
+    "endpoint"
+  ]
+}
