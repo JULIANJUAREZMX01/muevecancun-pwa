@@ -1,0 +1,52 @@
+{
+  "name": "Stop",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la parada"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID de la ruta"
+    },
+    "route_number": {
+      "type": "string",
+      "description": "N\u00famero de la ruta"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitud"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Longitud"
+    },
+    "order": {
+      "type": "integer",
+      "description": "Orden en la ruta"
+    },
+    "address": {
+      "type": "string",
+      "description": "Direcci\u00f3n aproximada"
+    },
+    "landmark": {
+      "type": "string",
+      "description": "Referencia cercana"
+    },
+    "next_arrival_minutes": {
+      "type": "integer",
+      "description": "Minutos para pr\u00f3xima llegada (simulado)"
+    },
+    "is_terminal": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "route_id",
+    "lat",
+    "lng"
+  ]
+}

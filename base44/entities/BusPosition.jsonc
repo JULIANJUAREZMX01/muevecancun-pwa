@@ -1,0 +1,65 @@
+{
+  "name": "BusPosition",
+  "type": "object",
+  "properties": {
+    "bus_id": {
+      "type": "string",
+      "description": "ID o n\u00famero de la unidad"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID de la ruta"
+    },
+    "route_number": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitud actual"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Longitud actual"
+    },
+    "speed_kmh": {
+      "type": "number",
+      "description": "Velocidad en km/h"
+    },
+    "heading": {
+      "type": "number",
+      "description": "Direcci\u00f3n en grados"
+    },
+    "occupancy": {
+      "type": "string",
+      "enum": [
+        "empty",
+        "low",
+        "medium",
+        "high",
+        "full"
+      ],
+      "default": "medium"
+    },
+    "next_stop": {
+      "type": "string",
+      "description": "Nombre de la pr\u00f3xima parada"
+    },
+    "minutes_to_next_stop": {
+      "type": "integer"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "bus_id",
+    "route_id",
+    "lat",
+    "lng"
+  ]
+}

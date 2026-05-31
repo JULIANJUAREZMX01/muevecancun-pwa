@@ -1,0 +1,61 @@
+{
+  "name": "Alert",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo de la alerta"
+    },
+    "message": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "delay",
+        "cancellation",
+        "detour",
+        "info",
+        "emergency"
+      ],
+      "default": "info"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID de la ruta afectada (opcional)"
+    },
+    "route_number": {
+      "type": "string",
+      "description": "N\u00famero de la ruta afectada"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "low"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "affected_stops": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "message",
+    "type"
+  ]
+}

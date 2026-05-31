@@ -1,75 +1,70 @@
-import { useLocation } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 
-
-export default function PageNotFound({}) {
-    const location = useLocation();
-    const pageName = location.pathname.substring(1);
-
-    const { data: authData, isFetched } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
-            try {
-                const user = await base44.auth.me();
-                return { user, isAuthenticated: true };
-            } catch (error) {
-                return { user: null, isAuthenticated: false };
-            }
-        }
-    });
-    
-    return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-            <div className="max-w-md w-full">
-                <div className="text-center space-y-6">
-                    {/* 404 Error Code */}
-                    <div className="space-y-2">
-                        <h1 className="text-7xl font-light text-slate-300">404</h1>
-                        <div className="h-0.5 w-16 bg-slate-200 mx-auto"></div>
-                    </div>
-                    
-                    {/* Main Message */}
-                    <div className="space-y-3">
-                        <h2 className="text-2xl font-medium text-slate-800">
-                            Page Not Found
-                        </h2>
-                        <p className="text-slate-600 leading-relaxed">
-                            The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
-                        </p>
-                    </div>
-                    
-                    {/* Admin Note */}
-                    {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
-                        <div className="mt-8 p-4 bg-slate-100 rounded-lg border border-slate-200">
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mt-0.5">
-                                    <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-                                </div>
-                                <div className="text-left space-y-1">
-                                    <p className="text-sm font-medium text-slate-700">Admin Note</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* Action Button */}
-                    <div className="pt-6">
-                        <button 
-                            onClick={() => window.location.href = '/'} 
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            Go Home
-                        </button>
-                    </div>
-                </div>
-            </div>
+export default function PageNotFound() {
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-6 py-12 text-center"
+      style={{ backgroundColor: '#FFFBF0', fontFamily: 'Nunito, sans-serif' }}
+    >
+      {/* Decorative elements top */}
+      <div className="relative mb-4">
+        <div className="flex items-end justify-center gap-2 mb-2">
+          <span className="text-5xl">🌴</span>
+          <span
+            className="font-black leading-none"
+            style={{ fontSize: '80px', color: '#FFD60A', textShadow: '3px 3px 0 #F4A261', lineHeight: 1 }}
+          >
+            404
+          </span>
+          <span className="text-5xl">🌴</span>
         </div>
-    )
+        <div className="flex items-center justify-center gap-3 mb-1">
+          <span className="text-2xl">👒</span>
+          <span className="text-2xl">🩴</span>
+        </div>
+      </div>
+
+      <h1
+        className="text-2xl font-black mb-2"
+        style={{ color: '#2D6A4F' }}
+      >
+        Página No Encontrada
+      </h1>
+
+      {/* Map illustration */}
+      <div
+        className="relative w-56 h-44 rounded-3xl overflow-hidden mb-4"
+        style={{
+          background: 'linear-gradient(135deg, #F4D03F 0%, #48CAE4 60%)',
+          boxShadow: '0 8px 32px rgba(45,106,79,0.2)',
+        }}
+      >
+        {/* Simplified Cancún coast */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-white font-black text-sm drop-shadow" style={{ color: '#1A5276' }}>Zona Hotelera</p>
+            <span className="text-2xl">🏖️</span>
+            <span className="text-xl">📍</span>
+          </div>
+        </div>
+        <div className="absolute bottom-2 left-3 text-xs font-bold" style={{ color: '#1A5276' }}>🌞 Hotel Zone</div>
+        <div className="absolute top-3 right-3 text-xl">🏛️</div>
+      </div>
+
+      {/* Toucan mascot */}
+      <div className="text-7xl mb-4">🦜</div>
+
+      <p className="text-gray-600 text-sm mb-6 max-w-xs">
+        ¡Oops! Parece que este destino no existe en nuestro mapa. Regresa al inicio y planifica tu viaje. 🗺️
+      </p>
+
+      <Link
+        to="/"
+        className="flex items-center gap-2 px-8 py-3.5 rounded-full font-black text-white text-base transition-transform active:scale-95"
+        style={{ background: 'linear-gradient(135deg, #2D6A4F 0%, #52B788 100%)', boxShadow: '0 4px 16px rgba(45,106,79,0.3)' }}
+      >
+        🏠 Ir al Inicio
+      </Link>
+    </div>
+  );
 }

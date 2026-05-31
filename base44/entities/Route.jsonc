@@ -1,0 +1,78 @@
+{
+  "name": "Route",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la ruta (ej: R1 - Centro / Zona Hotelera)"
+    },
+    "number": {
+      "type": "string",
+      "description": "N\u00famero o c\u00f3digo de la ruta"
+    },
+    "color": {
+      "type": "string",
+      "description": "Color hex de la ruta en el mapa"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n de la ruta"
+    },
+    "origin": {
+      "type": "string",
+      "description": "Punto de origen"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Punto destino"
+    },
+    "fare": {
+      "type": "number",
+      "description": "Tarifa en pesos MXN"
+    },
+    "frequency_minutes": {
+      "type": "integer",
+      "description": "Frecuencia en minutos"
+    },
+    "operating_hours_start": {
+      "type": "string",
+      "description": "Hora inicio (HH:MM)"
+    },
+    "operating_hours_end": {
+      "type": "string",
+      "description": "Hora fin (HH:MM)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "delayed",
+        "suspended",
+        "modified"
+      ],
+      "default": "active"
+    },
+    "stops_count": {
+      "type": "integer",
+      "description": "Total de paradas"
+    },
+    "waypoints": {
+      "type": "array",
+      "description": "Array de [lat, lng] del trazado",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "is_popular": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "number"
+  ]
+}

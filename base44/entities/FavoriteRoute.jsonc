@@ -1,0 +1,38 @@
+{
+  "name": "FavoriteRoute",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "ID de la ruta favorita"
+    },
+    "route_number": {
+      "type": "string"
+    },
+    "route_name": {
+      "type": "string"
+    },
+    "notify_arrivals": {
+      "type": "boolean",
+      "default": true,
+      "description": "Recibir alertas de llegadas"
+    },
+    "notify_alerts": {
+      "type": "boolean",
+      "default": true,
+      "description": "Recibir alertas de servicio"
+    },
+    "custom_label": {
+      "type": "string",
+      "description": "Etiqueta personalizada del usuario"
+    }
+  },
+  "required": [
+    "user_email",
+    "route_id"
+  ]
+}
