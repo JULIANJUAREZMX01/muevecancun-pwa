@@ -1,0 +1,72 @@
+{
+  "name": "TripTelemetry",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario (si est\u00e1 autenticado)"
+    },
+    "route_number": {
+      "type": "string",
+      "description": "N\u00famero de ruta del viaje"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Destino declarado por el usuario"
+    },
+    "start_lat": {
+      "type": "number",
+      "description": "Latitud de inicio del viaje"
+    },
+    "start_lng": {
+      "type": "number",
+      "description": "Longitud de inicio del viaje"
+    },
+    "end_lat": {
+      "type": "number",
+      "description": "Latitud de fin del viaje"
+    },
+    "end_lng": {
+      "type": "number",
+      "description": "Longitud de fin del viaje"
+    },
+    "duration_minutes": {
+      "type": "integer",
+      "description": "Duraci\u00f3n real del viaje en minutos"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si el viaje fue completado"
+    },
+    "crowdsource_answers": {
+      "type": "array",
+      "description": "Respuestas a las preguntas de crowdsourcing",
+      "items": {
+        "type": "object"
+      }
+    },
+    "bus_caught": {
+      "type": "boolean",
+      "description": "Si el usuario alcanz\u00f3 el bus"
+    },
+    "bus_occupancy_reported": {
+      "type": "string",
+      "enum": [
+        "empty",
+        "low",
+        "medium",
+        "high",
+        "full"
+      ],
+      "description": "Ocupaci\u00f3n del bus reportada por el usuario"
+    },
+    "trip_rating": {
+      "type": "integer",
+      "description": "Calificaci\u00f3n del viaje 1-5"
+    }
+  },
+  "required": [
+    "route_number"
+  ]
+}
