@@ -1,393 +1,277 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, BellOff, Send, CheckCircle, AlertTriangle, Zap, Clock } from 'lucide-react';
+import { Bell, BellOff, CheckCircle, AlertTriangle, Clock, Info, Zap, Trash2 } from 'lucide-react';
 
-const ROUTES = ['R1', 'R2', 'R13', 'R1A', 'R15', 'EXP'];
+const ROUTE_OPTIONS = ['R1', 'R2', 'R13', 'R1A', 'R15', 'EXP'];
 
-const NOTIF_TYPES = [
-  { key: 'delay', icon: '⏱️', label: 'Retrasos', desc: 'Aviso cuando tu ruta tenga demora' },
-  { key: 'schedule', icon: '🕐', label: 'Cambios de horario', desc: 'Modificaciones en el servicio' },
-  { key: 'incident', icon: '🚨', label: 'Incidentes', desc: 'Accidentes, cortes de ruta o emergencias' },
-];
+const ALERT_ICONS = {
+  delay:        { icon: '⏱️', color: '#F59E0B', bg: '#FEF3C7', label: 'Demora' },
+  cancellation: { icon: '🚫', color: '#EF4444', bg: '#FEE2E2', label: 'Cancelación' },
+  detour:       { icon: '🔄', color: '#3B82F6', bg: '#DBEAFE', label: 'Desvío' },
+  info:         { icon: 'ℹ️', color: '#6B7280', bg: '#F3F4F6', label: 'Info' },
+  emergency:    { icon: '🚨', color: '#EF4444', bg: '#FEE2E2', label: 'Emergencia' },
+};
 
-function ToggleSwitch({ value, onChange }) {
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'Ahora';
+  if (m < 60) return `Hace ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Hace ${h}h`;
+  return `Hace ${Math.floor(h / 24)}d`;
+}
+
+function AlertCard({ alert, onDismiss }) {
+  const cfg = ALERT_ICONS[alert.type] || ALERT_ICONS.info;
   return (
-    <button
-      onClick={() => onChange(!value)}
-      className="w-12 h-6 rounded-full transition-all flex items-center px-0.5"
-      style={{ backgroundColor: value ? '#2D6A4F' : '#D1D5DB' }}
-    >
-      <div
-        className="w-5 h-5 bg-white rounded-full shadow transition-transform"
-        style={{ transform: value ? 'translateX(24px)' : 'translateX(0)' }}
-      />
-    </button>
+    <div className="bg-white rounded-2xl p-4 flex gap-3"
+      style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.06)', borderLeft: `4px solid ${cfg.color}` }}>
+      <span className="text-2xl flex-shrink-0 mt-0.5">{cfg.icon}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-bold text-sm" style={{ color: '#1F2937' }}>{alert.title}</p>
+          <span className="text-[10px] text-gray-400 flex-shrink-0">{timeAgo(alert.created_date)}</span>
+        </div>
+        <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{alert.message}</p>
+        <div className="flex items-center gap-2 mt-2">
+          {alert.route_number && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: '#D1FAE5', color: '#2D6A4F' }}>
+              Ruta {alert.route_number}
+            </span>
+          )}
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+            style={{ backgroundColor: cfg.bg, color: cfg.color }}>
+            {cfg.label}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PushSettings({ myEmail }) {
+  const [sub, setSub] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [routes, setRoutes] = useState([]);
+  const [prefs, setPrefs] = useState({ notify_delays: true, notify_schedule: true, notify_incidents: true });
+  const [saved, setSaved] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (!myEmail) return;
+    base44.entities.PushSubscription.filter({ user_email: myEmail })
+      .then(res => {
+        if (res[0]) {
+          setSub(res[0]);
+          setRoutes(res[0].favorite_routes || []);
+          setPrefs({
+            notify_delays: res[0].notify_delays !== false,
+            notify_schedule: res[0].notify_schedule !== false,
+            notify_incidents: res[0].notify_incidents !== false,
+          });
+        }
+      });
+  }, [myEmail]);
+
+  const isPushSupported = 'serviceWorker' in navigator && 'PushManager' in window;
+
+  const handleSubscribe = async () => {
+    if (!isPushSupported) return;
+    setLoading(true);
+    try {
+      // Register service worker if not already
+      let reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) {
+        reg = await navigator.serviceWorker.register('/sw.js');
+      }
+      // For demo: store a mock subscription in the DB
+      const mockEndpoint = `https://push.example.com/notify/${myEmail}-${Date.now()}`;
+      const record = await base44.entities.PushSubscription.create({
+        user_email: myEmail,
+        endpoint: mockEndpoint,
+        p256dh: 'demo_key',
+        auth: 'demo_auth',
+        favorite_routes: routes,
+        ...prefs,
+        is_active: true,
+      });
+      setSub(record);
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  const handleSavePrefs = async () => {
+    if (!sub) return;
+    setLoading(true);
+    const updated = await base44.entities.PushSubscription.update(sub.id, {
+      favorite_routes: routes,
+      ...prefs,
+    });
+    setSub(updated);
+    setSaved(true);
+    setLoading(false);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleUnsubscribe = async () => {
+    if (!sub) return;
+    await base44.entities.PushSubscription.update(sub.id, { is_active: false });
+    setSub(null);
+  };
+
+  const toggleRoute = (r) => setRoutes(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
+
+  return (
+    <div className="space-y-4">
+      {/* Push toggle */}
+      <div className="bg-white rounded-3xl p-5" style={{ boxShadow: '0 2px 12px rgba(45,106,79,0.08)' }}>
+        <div className="flex items-center gap-3 mb-4">
+          {sub ? <Bell size={20} style={{ color: '#2D6A4F' }} /> : <BellOff size={20} className="text-gray-400" />}
+          <div className="flex-1">
+            <p className="font-black text-sm" style={{ color: '#1F2937' }}>Notificaciones Push</p>
+            <p className="text-xs text-gray-500">{sub ? '✅ Activadas' : 'Desactivadas'}</p>
+          </div>
+          {sub ? (
+            <button onClick={handleUnsubscribe}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold"
+              style={{ backgroundColor: '#FEE2E2', color: '#EF4444' }}>
+              Desactivar
+            </button>
+          ) : (
+            <button onClick={handleSubscribe} disabled={loading || !isPushSupported}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white"
+              style={{ background: 'linear-gradient(135deg,#2D6A4F,#52B788)' }}>
+              {loading ? 'Activando...' : 'Activar'}
+            </button>
+          )}
+        </div>
+        {!isPushSupported && (
+          <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-xl">Tu navegador no soporta notificaciones push.</p>
+        )}
+      </div>
+
+      {/* Route preferences */}
+      <div className="bg-white rounded-3xl p-5" style={{ boxShadow: '0 2px 12px rgba(45,106,79,0.08)' }}>
+        <p className="font-black text-sm mb-3" style={{ color: '#2D6A4F' }}>🚌 Mis rutas favoritas</p>
+        <div className="flex flex-wrap gap-2 mb-1">
+          {ROUTE_OPTIONS.map(r => (
+            <button key={r} onClick={() => toggleRoute(r)}
+              className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+              style={{
+                backgroundColor: routes.includes(r) ? '#2D6A4F' : '#F3F4F6',
+                color: routes.includes(r) ? 'white' : '#6B7280',
+              }}>
+              {r}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 mt-2">
+          {routes.length === 0 ? 'Sin selección = todas las rutas' : `${routes.length} rutas seleccionadas`}
+        </p>
+      </div>
+
+      {/* Notification types */}
+      <div className="bg-white rounded-3xl p-5" style={{ boxShadow: '0 2px 12px rgba(45,106,79,0.08)' }}>
+        <p className="font-black text-sm mb-3" style={{ color: '#2D6A4F' }}>⚙️ Tipos de aviso</p>
+        {[
+          { key: 'notify_delays', icon: '⏱️', label: 'Retrasos y demoras' },
+          { key: 'notify_schedule', icon: '🕐', label: 'Cambios de horario' },
+          { key: 'notify_incidents', icon: '🚨', label: 'Incidentes y emergencias' },
+        ].map(p => (
+          <div key={p.key} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+            <div className="flex items-center gap-2">
+              <span>{p.icon}</span>
+              <p className="text-sm font-semibold text-gray-700">{p.label}</p>
+            </div>
+            <button
+              onClick={() => setPrefs(prev => ({ ...prev, [p.key]: !prev[p.key] }))}
+              className="w-12 h-6 rounded-full transition-all relative"
+              style={{ backgroundColor: prefs[p.key] ? '#2D6A4F' : '#E5E7EB' }}>
+              <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all shadow-sm"
+                style={{ left: prefs[p.key] ? '26px' : '2px' }} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {sub && (
+        <button onClick={handleSavePrefs} disabled={loading}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2"
+          style={{ background: saved ? '#10B981' : 'linear-gradient(135deg,#2D6A4F,#52B788)' }}>
+          {saved ? <><CheckCircle size={16} /> Guardado</> : loading ? 'Guardando...' : 'Guardar preferencias'}
+        </button>
+      )}
+    </div>
   );
 }
 
 export default function NotificationsPage() {
-  const [user, setUser] = useState(null);
-  const [subscription, setSubscription] = useState(null);
-  const [pushSupported, setPushSupported] = useState(true);
-  const [isSubscribing, setIsSubscribing] = useState(false);
-  const [prefs, setPrefs] = useState({ notify_delays: true, notify_schedule: true, notify_incidents: true });
-  const [favoriteRoutes, setFavoriteRoutes] = useState([]);
-  const [toast, setToast] = useState(null);
-  const [adminPanel, setAdminPanel] = useState(false);
-  const [notifForm, setNotifForm] = useState({ route_number: 'R1', type: 'delay', title: '', message: '' });
-  const [sendingNotif, setSendingNotif] = useState(false);
+  const [tab, setTab] = useState('alerts');
+  const [myEmail, setMyEmail] = useState(null);
 
-  const qc = useQueryClient();
+  useEffect(() => {
+    base44.auth.me().then(u => { if (u) setMyEmail(u.email); }).catch(() => {});
+  }, []);
 
-  const { data: recentAlerts = [] } = useQuery({
-    queryKey: ['recent-alerts'],
-    queryFn: () => base44.entities.Alert.list('-created_date', 10),
+  const { data: alerts = [], isLoading } = useQuery({
+    queryKey: ['all-alerts'],
+    queryFn: () => base44.entities.Alert.filter({ is_active: true }),
     refetchInterval: 30000,
   });
 
-  useEffect(() => {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-      setPushSupported(false);
-    }
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const u = await base44.auth.me();
-      setUser(u);
-      if (u) loadSubscription(u.email);
-    } catch {}
-  };
-
-  const loadSubscription = async (email) => {
-    try {
-      const res = await base44.entities.PushSubscription.filter({ user_email: email });
-      if (res[0]) {
-        setSubscription(res[0]);
-        setPrefs({
-          notify_delays: res[0].notify_delays !== false,
-          notify_schedule: res[0].notify_schedule !== false,
-          notify_incidents: res[0].notify_incidents !== false,
-        });
-        setFavoriteRoutes(res[0].favorite_routes || []);
-      }
-    } catch {}
-  };
-
-  const toggleRoute = (route) => {
-    setFavoriteRoutes(prev =>
-      prev.includes(route) ? prev.filter(r => r !== route) : [...prev, route]
-    );
-  };
-
-  const subscribeToNotifications = async () => {
-    if (!user) { showToast('Inicia sesión para activar notificaciones'); return; }
-    setIsSubscribing(true);
-    try {
-      let endpoint = `simulated-endpoint-${user.email}-${Date.now()}`;
-      let p256dh = 'simulated-p256dh';
-      let auth = 'simulated-auth';
-
-      // Try real browser push
-      if ('Notification' in window && 'serviceWorker' in navigator) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          showToast('🔔 Notificaciones activadas en el navegador');
-        }
-      }
-
-      const data = {
-        user_email: user.email,
-        endpoint,
-        p256dh,
-        auth,
-        favorite_routes: favoriteRoutes,
-        notify_delays: prefs.notify_delays,
-        notify_schedule: prefs.notify_schedule,
-        notify_incidents: prefs.notify_incidents,
-        is_active: true,
-      };
-
-      let sub;
-      if (subscription) {
-        sub = await base44.entities.PushSubscription.update(subscription.id, data);
-      } else {
-        sub = await base44.entities.PushSubscription.create(data);
-      }
-      setSubscription(sub);
-      showToast('✅ Preferencias de notificaciones guardadas');
-    } catch (e) {
-      showToast('Error al guardar preferencias: ' + e.message);
-    } finally {
-      setIsSubscribing(false);
-    }
-  };
-
-  const unsubscribe = async () => {
-    if (!subscription) return;
-    await base44.entities.PushSubscription.update(subscription.id, { is_active: false });
-    setSubscription(null);
-    showToast('🔕 Notificaciones desactivadas');
-  };
-
-  const savePrefs = async () => {
-    if (!subscription) { subscribeToNotifications(); return; }
-    await base44.entities.PushSubscription.update(subscription.id, {
-      ...prefs,
-      favorite_routes: favoriteRoutes,
-    });
-    showToast('✅ Preferencias actualizadas');
-  };
-
-  const sendTestNotification = async () => {
-    setSendingNotif(true);
-    try {
-      const res = await base44.functions.invoke('sendPushNotification', notifForm);
-      showToast(`📨 Notificación enviada a ${res.data?.targets_count || 0} usuarios`);
-      qc.invalidateQueries(['recent-alerts']);
-    } catch (e) {
-      showToast('Error: ' + e.message);
-    } finally {
-      setSendingNotif(false);
-    }
-  };
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3500);
-  };
-
-  const isActive = subscription?.is_active;
+  const sorted = [...alerts].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFBF0' }}>
-      {/* Header */}
       <div style={{ background: 'linear-gradient(135deg, #2D6A4F 0%, #52B788 100%)' }}>
-        <div className="px-4 pt-12 pb-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Bell size={20} className="text-yellow-300" />
-                <h1 className="text-white font-black text-xl">Notificaciones</h1>
-              </div>
-              <p className="text-green-100 text-sm">Alertas en tiempo real de tus rutas</p>
-            </div>
-            <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-              style={{ backgroundColor: isActive ? '#FFD60A' : 'rgba(255,255,255,0.2)' }}
-            >
-              <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-700 animate-pulse' : 'bg-gray-400'}`} />
-              <span className="text-xs font-bold" style={{ color: isActive ? '#2D6A4F' : 'white' }}>
-                {isActive ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
+        <div className="px-4 pt-12 pb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Bell size={20} className="text-yellow-300" />
+            <h1 className="text-white font-black text-xl">Notificaciones</h1>
+          </div>
+          <p className="text-green-100 text-sm">Alertas en tiempo real de tus rutas</p>
+
+          <div className="flex gap-2 mt-4">
+            {[
+              { key: 'alerts', label: `🔔 Alertas${alerts.length > 0 ? ` (${alerts.length})` : ''}` },
+              { key: 'settings', label: '⚙️ Configurar' },
+            ].map(t => (
+              <button key={t.key} onClick={() => setTab(t.key)}
+                className="flex-1 py-2 rounded-2xl text-sm font-bold transition-all"
+                style={{
+                  backgroundColor: tab === t.key ? '#FFD60A' : 'rgba(255,255,255,0.2)',
+                  color: tab === t.key ? '#2D6A4F' : 'white',
+                }}>
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold text-white shadow-xl"
-          style={{ background: 'linear-gradient(135deg, #2D6A4F, #52B788)', maxWidth: '90vw' }}
-        >
-          {toast}
-        </div>
-      )}
-
-      <div className="px-4 py-5 space-y-5">
-
-        {/* Subscribe / Unsubscribe CTA */}
-        <div
-          className="p-5 rounded-3xl"
-          style={{
-            background: isActive
-              ? 'linear-gradient(135deg, #D1FAE5, #A7F3D0)'
-              : 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
-            border: `2px solid ${isActive ? '#52B788' : '#F59E0B'}`,
-          }}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-3xl">{isActive ? '🔔' : '🔕'}</span>
-            <div>
-              <p className="font-black text-base" style={{ color: isActive ? '#065F46' : '#92400E' }}>
-                {isActive ? 'Notificaciones Activadas' : 'Activa tus notificaciones'}
-              </p>
-              <p className="text-xs" style={{ color: isActive ? '#047857' : '#B45309' }}>
-                {isActive ? 'Recibirás avisos de tus rutas favoritas' : 'Entérate de retrasos e incidentes al instante'}
-              </p>
-            </div>
-          </div>
-          {isActive ? (
-            <button
-              onClick={unsubscribe}
-              className="w-full py-2.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'white', color: '#991B1B' }}
-            >
-              <BellOff size={16} /> Desactivar
-            </button>
-          ) : (
-            <button
-              onClick={subscribeToNotifications}
-              disabled={isSubscribing}
-              className="w-full py-2.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #2D6A4F, #52B788)', color: 'white' }}
-            >
-              <Bell size={16} /> {isSubscribing ? 'Activando...' : 'Activar notificaciones'}
-            </button>
-          )}
-        </div>
-
-        {/* Favorite Routes */}
-        <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 2px 12px rgba(45,106,79,0.08)' }}>
-          <p className="font-black text-sm mb-3" style={{ color: '#2D6A4F' }}>📍 Rutas a monitorear</p>
-          <div className="flex flex-wrap gap-2">
-            {ROUTES.map(r => (
-              <button
-                key={r}
-                onClick={() => toggleRoute(r)}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-                style={{
-                  backgroundColor: favoriteRoutes.includes(r) ? '#2D6A4F' : '#F3F4F6',
-                  color: favoriteRoutes.includes(r) ? 'white' : '#6B7280',
-                }}
-              >
-                {favoriteRoutes.includes(r) && '✓ '}{r}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-2">Sin selección = todas las rutas</p>
-        </div>
-
-        {/* Notification type prefs */}
-        <div className="bg-white rounded-2xl p-4 space-y-4" style={{ boxShadow: '0 2px 12px rgba(45,106,79,0.08)' }}>
-          <p className="font-black text-sm" style={{ color: '#2D6A4F' }}>⚙️ Tipo de avisos</p>
-          {NOTIF_TYPES.map(t => (
-            <div key={t.key} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{t.icon}</span>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">{t.label}</p>
-                  <p className="text-xs text-gray-400">{t.desc}</p>
-                </div>
+      <div className="px-4 py-4 space-y-3">
+        {tab === 'alerts' && (
+          <>
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-4 border-green-200 border-t-green-700 rounded-full animate-spin mx-auto" />
               </div>
-              <ToggleSwitch
-                value={prefs[`notify_${t.key}s`] ?? prefs[`notify_${t.key}`] ?? true}
-                onChange={(v) => setPrefs(prev => ({ ...prev, [`notify_${t.key}s`]: v, [`notify_${t.key}`]: v }))}
-              />
-            </div>
-          ))}
-          <button
-            onClick={savePrefs}
-            className="w-full py-3 rounded-2xl font-bold text-sm"
-            style={{ background: 'linear-gradient(135deg, #2D6A4F, #52B788)', color: 'white' }}
-          >
-            Guardar preferencias
-          </button>
-        </div>
-
-        {/* Admin: Send notification */}
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(45,106,79,0.08)' }}>
-          <button
-            onClick={() => setAdminPanel(!adminPanel)}
-            className="w-full flex items-center justify-between p-4"
-          >
-            <div className="flex items-center gap-2">
-              <Send size={16} style={{ color: '#2D6A4F' }} />
-              <span className="font-black text-sm" style={{ color: '#2D6A4F' }}>Enviar notificación (admin)</span>
-            </div>
-            <span className="text-gray-400">{adminPanel ? '▲' : '▼'}</span>
-          </button>
-          {adminPanel && (
-            <div className="px-4 pb-4 space-y-3 border-t border-gray-50 pt-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1">Ruta</label>
-                  <select
-                    value={notifForm.route_number}
-                    onChange={e => setNotifForm(p => ({ ...p, route_number: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 outline-none"
-                    style={{ color: '#2D6A4F' }}
-                  >
-                    {ROUTES.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1">Tipo</label>
-                  <select
-                    value={notifForm.type}
-                    onChange={e => setNotifForm(p => ({ ...p, type: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 outline-none"
-                    style={{ color: '#2D6A4F' }}
-                  >
-                    <option value="delay">Retraso</option>
-                    <option value="schedule">Horario</option>
-                    <option value="incident">Incidente</option>
-                  </select>
-                </div>
+            ) : sorted.length === 0 ? (
+              <div className="text-center py-12">
+                <span className="text-5xl block mb-3">✅</span>
+                <p className="font-black text-base" style={{ color: '#2D6A4F' }}>Sin alertas activas</p>
+                <p className="text-sm text-gray-400 mt-1">Todas las rutas operan con normalidad</p>
               </div>
-              <input
-                placeholder="Título del aviso"
-                value={notifForm.title}
-                onChange={e => setNotifForm(p => ({ ...p, title: e.target.value }))}
-                className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 outline-none"
-                style={{ color: '#1F2937' }}
-              />
-              <textarea
-                placeholder="Mensaje detallado..."
-                value={notifForm.message}
-                onChange={e => setNotifForm(p => ({ ...p, message: e.target.value }))}
-                className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 outline-none h-20 resize-none"
-                style={{ color: '#1F2937' }}
-              />
-              <button
-                onClick={sendTestNotification}
-                disabled={sendingNotif || !notifForm.title || !notifForm.message}
-                className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2"
-                style={{
-                  background: sendingNotif ? '#E5E7EB' : 'linear-gradient(135deg, #F4A261, #E76F51)',
-                  color: sendingNotif ? '#9CA3AF' : 'white',
-                }}
-              >
-                <Send size={14} />
-                {sendingNotif ? 'Enviando...' : 'Enviar a usuarios suscritos'}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Recent alerts */}
-        <div>
-          <p className="font-black text-sm mb-3" style={{ color: '#2D6A4F' }}>📋 Alertas Recientes</p>
-          <div className="space-y-2">
-            {recentAlerts.length === 0 ? (
-              <div className="text-center py-6 text-gray-400 text-sm">Sin alertas recientes</div>
-            ) : recentAlerts.map(a => (
-              <div
-                key={a.id}
-                className="flex items-start gap-3 p-3 rounded-2xl bg-white"
-                style={{
-                  borderLeft: `4px solid ${a.severity === 'high' ? '#EF4444' : a.severity === 'medium' ? '#F59E0B' : '#10B981'}`,
-                  boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
-                }}
-              >
-                <span className="text-xl mt-0.5">{a.type === 'delay' ? '⏱️' : a.type === 'emergency' ? '🚨' : a.type === 'info' ? 'ℹ️' : '⚠️'}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800">{a.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{a.message}</p>
-                  {a.route_number && (
-                    <span className="text-xs font-bold mt-1 inline-block px-2 py-0.5 rounded-full" style={{ backgroundColor: '#D1FAE5', color: '#2D6A4F' }}>
-                      Ruta {a.route_number}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+            ) : sorted.map(a => <AlertCard key={a.id} alert={a} />)}
+          </>
+        )}
+        {tab === 'settings' && <PushSettings myEmail={myEmail} />}
         <div className="h-4" />
       </div>
     </div>

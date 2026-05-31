@@ -1,12 +1,12 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
-import { Home, Map, List, Bell, BarChart2, Trophy } from 'lucide-react';
+import { Home, Map, List, Bell, Trophy } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Inicio' },
   { path: '/mapa', icon: Map, label: 'Mapa' },
-  { path: '/alertas', icon: Bell, label: 'Alertas' },
+  { path: '/rutas', icon: List, label: 'Rutas' },
+  { path: '/notificaciones', icon: Bell, label: 'Avisos' },
   { path: '/rewards', icon: Trophy, label: 'Puntos' },
-  { path: '/dashboard', icon: BarChart2, label: 'IA' },
 ];
 
 export default function Layout() {
