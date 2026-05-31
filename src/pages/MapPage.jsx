@@ -137,7 +137,7 @@ export default function MapPage() {
     : displayRoutes;
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: '#FFFBF0' }}>
+    <div className="flex flex-col" style={{ backgroundColor: '#FFFBF0', height: '100vh', minHeight: '100vh' }}>
       {/* Header */}
       <div className="px-4 pt-12 pb-3" style={{ background: 'linear-gradient(135deg, #2D6A4F 0%, #52B788 100%)' }}>
         <div className="flex items-center justify-between">
@@ -275,7 +275,7 @@ export default function MapPage() {
       {/* Legend */}
       <div
         className="px-4 py-3 flex items-center gap-4 overflow-x-auto"
-        style={{ backgroundColor: 'white', borderTop: '1px solid #F3F4F6' }}
+        style={{ backgroundColor: 'white', borderTop: '1px solid #F3F4F6', paddingBottom: 'calc(0.75rem + 5rem)' }}
       >
         <span className="text-xs font-black text-gray-500 flex-shrink-0">LEYENDA:</span>
         <div className="flex items-center gap-1.5 flex-shrink-0">

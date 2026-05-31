@@ -133,7 +133,7 @@ export default function AgentPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: '#FFFBF0' }}>
+    <div className="flex flex-col" style={{ backgroundColor: '#FFFBF0', height: '100vh' }}>
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg, #2D6A4F 0%, #52B788 100%)', flexShrink: 0 }}>
         <div className="px-4 pt-12 pb-4">
@@ -220,7 +220,7 @@ export default function AgentPage() {
       {/* Input */}
       <div
         className="px-4 py-3 flex items-center gap-3"
-        style={{ backgroundColor: 'white', borderTop: '2px solid #FFD60A', flexShrink: 0, paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        style={{ backgroundColor: 'white', borderTop: '1px solid #E5E7EB', flexShrink: 0, paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         <input
           type="text"

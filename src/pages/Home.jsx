@@ -88,20 +88,21 @@ export default function Home() {
       <div className="px-4 py-5 space-y-6">
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: '📍', label: 'Paradas cercanas', path: '/mapa', color: '#2D6A4F', bg: '#D1FAE5' },
-            { icon: '🎫', label: 'Mis boletos', path: '/boletos', color: '#7C3AED', bg: '#EDE9FE' },
-            { icon: '⭐', label: 'Favoritas', path: '/rutas', color: '#92400E', bg: '#FEF3C7' },
+            { icon: '🗺️', label: 'Mapa Vivo', path: '/mapa', color: '#2D6A4F', bg: '#D1FAE5' },
+            { icon: '🎫', label: 'Boletos', path: '/boletos', color: '#7C3AED', bg: '#EDE9FE' },
+            { icon: '🔔', label: 'Alertas', path: '/alertas', color: '#92400E', bg: '#FEF3C7' },
+            { icon: '🦜', label: 'Agente', path: '/agente', color: '#1D4ED8', bg: '#DBEAFE' },
           ].map((action) => (
             <Link
               key={action.label}
               to={action.path}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl text-center route-card"
+              className="flex flex-col items-center gap-1.5 p-3 rounded-2xl text-center route-card"
               style={{ backgroundColor: action.bg, color: action.color }}
             >
               <span className="text-2xl">{action.icon}</span>
-              <span className="text-xs font-bold leading-tight">{action.label}</span>
+              <span className="text-[11px] font-bold leading-tight">{action.label}</span>
             </Link>
           ))}
         </div>
@@ -187,24 +188,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Agente */}
-        <Link
-          to="/agente"
-          className="flex items-center gap-4 p-5 rounded-3xl"
-          style={{ background: 'linear-gradient(135deg, #2D6A4F 0%, #52B788 100%)', boxShadow: '0 4px 20px rgba(45,106,79,0.3)' }}
-        >
-          <span className="text-4xl">🦜</span>
-          <div className="flex-1">
-            <p className="text-white font-black text-base">¿Necesitas ayuda?</p>
-            <p className="text-green-100 text-sm">Pregúntale al Agente MueveCancún</p>
-          </div>
-          <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: '#FFD60A' }}
+        {/* CTAs Row */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            to="/agente"
+            className="flex flex-col items-center gap-2 p-4 rounded-3xl text-center"
+            style={{ background: 'linear-gradient(135deg, #2D6A4F 0%, #52B788 100%)', boxShadow: '0 4px 16px rgba(45,106,79,0.3)' }}
           >
-            <ChevronRight size={18} style={{ color: '#2D6A4F' }} />
-          </div>
-        </Link>
+            <span className="text-3xl">🦜</span>
+            <div>
+              <p className="text-white font-black text-sm">Agente IA</p>
+              <p className="text-green-100 text-xs">Planifica tu viaje</p>
+            </div>
+          </Link>
+          <Link
+            to="/dashboard"
+            className="flex flex-col items-center gap-2 p-4 rounded-3xl text-center"
+            style={{ background: 'linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%)', boxShadow: '0 4px 16px rgba(29,78,216,0.3)' }}
+          >
+            <span className="text-3xl">🤖</span>
+            <div>
+              <p className="text-white font-black text-sm">Dashboard IA</p>
+              <p className="text-blue-100 text-xs">Análisis de rutas</p>
+            </div>
+          </Link>
+        </div>
 
         {/* Tip del día */}
         <div

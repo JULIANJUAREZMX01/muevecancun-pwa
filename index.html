@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#2D6A4F" />
     <meta name="description" content="MueveCancún - Tu guía de transporte público en Cancún. Rutas, horarios, mapa en vivo y alertas en tiempo real." />
+
+    <!-- PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="MueveCancún" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="MueveCancún" />
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="MueveCancún" />
+    <meta property="og:title" content="MueveCancún 🦜" />
     <meta property="og:description" content="Tu guía de transporte público en Cancún. Rutas, horarios y mapa en vivo." />
     <meta property="og:type" content="website" />
 
@@ -21,5 +25,12 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
