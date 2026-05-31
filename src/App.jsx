@@ -11,6 +11,7 @@ import MapPage from '@/pages/MapPage';
 import RoutesPage from '@/pages/RoutesPage';
 import AlertsPage from '@/pages/AlertsPage';
 import AgentPage from '@/pages/AgentPage';
+import DashboardPage from '@/pages/DashboardPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -44,6 +45,7 @@ const AuthenticatedApp = () => {
         <Route path="/rutas" element={<RoutesPage />} />
         <Route path="/alertas" element={<AlertsPage />} />
         <Route path="/agente" element={<AgentPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
