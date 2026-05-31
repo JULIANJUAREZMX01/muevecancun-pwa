@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Star, Zap, Bus, FileText, Bell, ChevronRight, Award } from 'lucide-react';
+import WeeklyChallenges from '@/components/rewards/WeeklyChallenges';
 
 const LEVELS = [
   { level: 1, name: 'Viajero Inicial',    min: 0,    badge: '🚶', color: '#9CA3AF' },
@@ -223,7 +224,7 @@ export default function RewardsPage() {
           <p className="text-green-100 text-sm">Gana puntos usando el transporte 🚌</p>
 
           <div className="flex gap-2 mt-4">
-            {[{ key: 'profile', label: '👤 Mi Perfil' }, { key: 'board', label: '🏆 Tabla' }].map(t => (
+            {[{ key: 'profile', label: '👤 Mi Perfil' }, { key: 'challenges', label: '⚡ Desafíos' }, { key: 'board', label: '🏆 Tabla' }].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className="flex-1 py-2 rounded-2xl text-sm font-bold transition-all"
                 style={{
@@ -248,6 +249,9 @@ export default function RewardsPage() {
       <div className="px-4 py-4 space-y-4">
         {tab === 'profile' && (
           <MyProfile record={myRecord} onAction={handleAction} actionLoading={actionLoading} />
+        )}
+        {tab === 'challenges' && (
+          <WeeklyChallenges userRecord={myRecord} onPointsEarned={refetch} />
         )}
         {tab === 'board' && (
           <Leaderboard data={allUsers} myEmail={myEmail} />

@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { base44 } from '@/api/base44Client';
 import { Navigation, Layers, RefreshCw } from 'lucide-react';
+import PredictivePanel from '@/components/map/PredictivePanel';
 import { useQuery } from '@tanstack/react-query';
 
 // Fix Leaflet default icon
@@ -266,6 +267,9 @@ export default function MapPage() {
           <div className="live-dot w-2 h-2 bg-yellow-400 rounded-full"></div>
           <span className="text-white text-xs font-bold">{displayBuses.length} buses</span>
         </div>
+
+        {/* Predictive AI Panel */}
+        <PredictivePanel selectedRoute={selectedRoute} />
       </div>
 
       {/* Legend */}
