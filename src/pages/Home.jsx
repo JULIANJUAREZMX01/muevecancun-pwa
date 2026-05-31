@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Search, Bell, Star, Clock, ChevronRight, Zap, Navigation } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import OccupancyHeatmap from '@/components/home/OccupancyHeatmap';
 
 const STATUS_CONFIG = {
   active: { label: 'Activa', color: '#2D6A4F', bg: '#D1FAE5' },
@@ -137,6 +138,9 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Occupancy Heatmap */}
+        <OccupancyHeatmap />
 
         {/* Popular Routes */}
         <div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Send, Mic, RotateCcw, Plus } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import TripPlanner from '@/components/agent/TripPlanner';
 
 const QUICK_QUESTIONS = [
   '¿Cómo llego a la Zona Hotelera?',
@@ -69,6 +70,7 @@ function MessageBubble({ message }) {
 }
 
 export default function AgentPage() {
+  const [view, setView] = useState('chat');
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -155,17 +157,40 @@ export default function AgentPage() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={resetConversation}
-              className="p-2.5 rounded-xl"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-            >
-              <RotateCcw size={18} className="text-white" />
-            </button>
+            {view === 'chat' && (
+              <button
+                onClick={resetConversation}
+                className="p-2.5 rounded-xl"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+              >
+                <RotateCcw size={18} className="text-white" />
+              </button>
+            )}
+          </div>
+
+          {/* View tabs */}
+          <div className="flex gap-2 mt-4">
+            {[{ key: 'chat', label: '💬 Chat' }, { key: 'planner', label: '🗺️ Planear viaje' }].map(t => (
+              <button key={t.key} onClick={() => setView(t.key)}
+                className="flex-1 py-2 rounded-2xl text-sm font-bold transition-all"
+                style={{
+                  backgroundColor: view === t.key ? '#FFD60A' : 'rgba(255,255,255,0.2)',
+                  color: view === t.key ? '#2D6A4F' : 'white',
+                }}>
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
+      {view === 'planner' && (
+        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+          <TripPlanner />
+        </div>
+      )}
+
+      {view === 'chat' && <>
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ paddingBottom: '8px' }}>
         {isCreating ? (
@@ -244,6 +269,7 @@ export default function AgentPage() {
           <Send size={16} style={{ color: input.trim() && !isLoading ? 'white' : '#9CA3AF' }} />
         </button>
       </div>
+      </>}
     </div>
   );
 }
