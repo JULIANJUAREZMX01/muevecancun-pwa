@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Brain, TrendingUp, Clock, Users, AlertTriangle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { Brain, TrendingUp, Clock, Users, AlertTriangle, ChevronDown, ChevronUp, RefreshCw, Gauge } from 'lucide-react';
 
 const ROUTE_COLORS = {
   'R1': '#F4A261',
@@ -35,6 +35,7 @@ function MiniBar({ pct, color }) {
 function RouteRow({ route, prediction }) {
   const delay = getRiskLevel(prediction.delay_pct);
   const full = getRiskLevel(prediction.full_pct);
+  const traffic = getRiskLevel(prediction.traffic_density ?? prediction.delay_pct);
   const routeColor = ROUTE_COLORS[route] || '#2D6A4F';
 
   const trendIcon = prediction.trend === 'up' ? '📈' : prediction.trend === 'down' ? '📉' : '➡️';
@@ -58,7 +59,7 @@ function RouteRow({ route, prediction }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {/* Delay risk */}
         <div className="p-2 rounded-xl" style={{ backgroundColor: delay.bg }}>
           <div className="flex items-center justify-between mb-1">
@@ -69,7 +70,7 @@ function RouteRow({ route, prediction }) {
             <span className="text-xs font-black" style={{ color: delay.color }}>{prediction.delay_pct}%</span>
           </div>
           <MiniBar pct={prediction.delay_pct} color={delay.color} />
-          <p className="text-[9px] text-gray-400 mt-0.5">Riesgo: {delay.label}</p>
+          <p className="text-[9px] text-gray-400 mt-0.5">{delay.label}</p>
         </div>
 
         {/* Full bus risk */}
@@ -82,8 +83,35 @@ function RouteRow({ route, prediction }) {
             <span className="text-xs font-black" style={{ color: full.color }}>{prediction.full_pct}%</span>
           </div>
           <MiniBar pct={prediction.full_pct} color={full.color} />
-          <p className="text-[9px] text-gray-400 mt-0.5">Probabilidad: {full.label}</p>
+          <p className="text-[9px] text-gray-400 mt-0.5">{full.label}</p>
         </div>
+
+        {/* Traffic density */}
+        <div className="p-2 rounded-xl" style={{ backgroundColor: traffic.bg }}>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1">
+              <Gauge size={10} style={{ color: traffic.color }} />
+              <span className="text-[10px] font-bold" style={{ color: traffic.color }}>Tráfico</span>
+            </div>
+            <span className="text-xs font-black" style={{ color: traffic.color }}>{prediction.traffic_density ?? prediction.delay_pct}%</span>
+          </div>
+          <MiniBar pct={prediction.traffic_density ?? prediction.delay_pct} color={traffic.color} />
+          <p className="text-[9px] text-gray-400 mt-0.5">{traffic.label}</p>
+        </div>
+      </div>
+
+      {/* ETA + sample size footer */}
+      <div className="flex items-center justify-between mt-2 px-1">
+        <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: '#2D6A4F' }}>
+          <Clock size={10} /> ETA próximo bus: ~{prediction.next_bus} min
+        </span>
+        {(prediction.sample_size > 0 || prediction.live_buses > 0) && (
+          <span className="text-[9px] text-gray-400">
+            {prediction.sample_size > 0 ? `${prediction.sample_size} viajes` : ''}
+            {prediction.sample_size > 0 && prediction.live_buses > 0 ? ' · ' : ''}
+            {prediction.live_buses > 0 ? `${prediction.live_buses} en vivo` : ''}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -98,19 +126,12 @@ export default function PredictivePanel({ selectedRoute }) {
   const refresh = async () => {
     setLoading(true);
     try {
-      // Use the existing analyzeRoutes function for real AI analysis
-      await base44.functions.invoke('analyzeRoutes', {});
-      // Simulate updated predictions with slight variation
-      const updated = {};
-      Object.entries(SAMPLE_PREDICTIONS).forEach(([key, val]) => {
-        updated[key] = {
-          ...val,
-          delay_pct: Math.max(5, Math.min(95, val.delay_pct + Math.floor((Math.random() - 0.5) * 20))),
-          full_pct: Math.max(5, Math.min(95, val.full_pct + Math.floor((Math.random() - 0.5) * 20))),
-          next_bus: Math.max(2, val.next_bus + Math.floor((Math.random() - 0.5) * 6)),
-        };
-      });
-      setPredictions(updated);
+      // Real predictions from user reports (TripTelemetry), live buses & alerts
+      const res = await base44.functions.invoke('predictRouteConditions', {});
+      const real = res?.data?.predictions;
+      if (real && Object.keys(real).length > 0) {
+        setPredictions(real);
+      }
       setLastUpdated(new Date());
     } catch (e) {
       // Keep existing predictions on error
@@ -118,6 +139,13 @@ export default function PredictivePanel({ selectedRoute }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    refresh();
+    const interval = setInterval(refresh, 90000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const routesToShow = selectedRoute
     ? [selectedRoute.number || selectedRoute]
