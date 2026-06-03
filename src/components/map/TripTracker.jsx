@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Navigation, X, ChevronRight, MapPin, AlertCircle, CheckCircle, RefreshCw, ArrowUpDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import QuickReportButton from '@/components/map/QuickReportButton';
 
 // Crowdsource questions asked at key moments during the trip
 const TRIP_QUESTIONS = {
@@ -460,15 +461,18 @@ export default function TripTracker({ routes, stops, userPos, onTripStart, onTri
 
       {/* Active trip HUD */}
       {trip && (
-        <TripHUD
-          trip={trip}
-          userPos={userPos}
-          onEndTrip={() => handleEndTrip(false)}
-          onShowQuestion={() => {
-            const q = TRIP_QUESTIONS.onboard[0];
-            setActiveQuestion(q);
-          }}
-        />
+        <>
+          <TripHUD
+            trip={trip}
+            userPos={userPos}
+            onEndTrip={() => handleEndTrip(false)}
+            onShowQuestion={() => {
+              const q = TRIP_QUESTIONS.onboard[0];
+              setActiveQuestion(q);
+            }}
+          />
+          <QuickReportButton routeNumber={trip.route?.number} />
+        </>
       )}
 
       {/* Crowdsource question card */}

@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Star, Zap, Bus, FileText, Bell, ChevronRight, Award } from 'lucide-react';
 import WeeklyChallenges from '@/components/rewards/WeeklyChallenges';
+import MonthlyProgress from '@/components/rewards/MonthlyProgress';
+import ThemeToggle from '@/components/settings/ThemeToggle';
 
 const LEVELS = [
   { level: 1, name: 'Viajero Inicial',    min: 0,    badge: '🚶', color: '#9CA3AF' },
@@ -248,7 +250,11 @@ export default function RewardsPage() {
 
       <div className="px-4 py-4 space-y-4">
         {tab === 'profile' && (
-          <MyProfile record={myRecord} onAction={handleAction} actionLoading={actionLoading} />
+          <>
+            <MyProfile record={myRecord} onAction={handleAction} actionLoading={actionLoading} />
+            <MonthlyProgress userEmail={myEmail} />
+            <ThemeToggle />
+          </>
         )}
         {tab === 'challenges' && (
           <WeeklyChallenges userRecord={myRecord} onPointsEarned={refetch} />

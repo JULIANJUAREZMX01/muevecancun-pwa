@@ -37,6 +37,26 @@
     --tropical-orange: #F4A261;
     --tropical-blue: #48CAE4;
   }
+
+  .dark {
+    --background: 150 30% 8%;
+    --foreground: 48 30% 92%;
+    --card: 150 25% 12%;
+    --card-foreground: 48 30% 92%;
+    --popover: 150 25% 12%;
+    --popover-foreground: 48 30% 92%;
+    --primary: 150 41% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 90% 50%;
+    --secondary-foreground: 150 41% 12%;
+    --muted: 150 20% 18%;
+    --muted-foreground: 48 15% 65%;
+    --accent: 28 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --border: 150 20% 20%;
+    --input: 150 20% 20%;
+    --ring: 150 41% 45%;
+  }
 }
 
 @layer base {
@@ -48,6 +68,10 @@
     @apply bg-background text-foreground font-body;
     background-color: #FFFBF0;
     font-family: 'Nunito', sans-serif;
+  }
+
+  .dark body {
+    background-color: #0F1F18;
   }
 
   h1, h2, h3, h4, h5, h6 {
